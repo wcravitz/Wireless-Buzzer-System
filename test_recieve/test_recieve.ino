@@ -3,7 +3,7 @@
 #include <SPI.h>
 
 const int ledPin = 5;
-const int buttonPin = 6;
+const int buttonPin = 4;
 bool locked = false;
 int lastBuzzed;
 

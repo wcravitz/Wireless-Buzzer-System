@@ -2,7 +2,7 @@
 #include <RF24Network.h>
 #include <SPI.h>
 
-const int buttonPin = 5;
+const int buttonPin = 6;
 
 RF24 radio(9, 10);               // nRF24L01 (CE,CSN)
 RF24Network network(radio);      // Include the radio in the network
@@ -22,5 +22,8 @@ void loop() {
   network.update();
   unsigned long buttonValue = digitalRead(buttonPin);  // Read the button value
   RF24NetworkHeader header(master);     // (Address where the data is going)
-  bool ok = network.write(header, &buttonValue, sizeof(buttonValue)); // Send the data
+  if (buttonValue) {
+    network.write(header, &buttonValue, sizeof(buttonValue)); // Send the data
+  }
+  Serial.println(buttonValue);
 }
