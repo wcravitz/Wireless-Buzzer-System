@@ -2,8 +2,10 @@
 #include <RF24Network.h>
 #include <SPI.h>
 
+const int buttonPin = 4;
 bool locked = false;
 unsigned long buzzTeam;
+unsigned long buzzed;
 
 RF24 radio(9, 10);               // nRF24L01 (CE,CSN)
 RF24Network network(radio);      // Include the radio in the network
@@ -25,10 +27,21 @@ void loop() {
   if (!locked) {
     while (network.available()) { // Is there any incoming data
       RF24NetworkHeader header;
-      unsigned long incomingData;
-      network.read(header, &incomingData, sizeof(incomingData)); // Read the incoming data
+      network.read(header, &buzzed, sizeof(buzzed)); // Read the incoming data
       buzzTeam = header.from_node;
-  
+      digitalWrite(leds[buzzTeam-1][buzzed-1], HIGH);
+      unsigned long ledOn = 2;
+      RF24NetworkHeader header1(teams[buzzTeam-1]);
+      network.write(header1, &ledOn, sizeof(ledOn));
+      locked = true;
+    }
+  } else {
+    if (digitalRead(buttonPin)) {
+      digitalWrite(leds[buzzTeam-1][buzzed-1], LOW);
+      unsigned long ledOff = 3;
+      RF24NetworkHeader header2(teams[buzzTeam-1]);
+      network.write(header2, &ledOff, sizeof(ledOff));
+      locked = false;
     }
   }
 
