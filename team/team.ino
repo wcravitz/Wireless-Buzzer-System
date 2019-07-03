@@ -26,17 +26,21 @@ void loop() {
     RF24NetworkHeader header;
     unsigned long incomingData;
     network.read(header, &incomingData, sizeof(incomingData)); // Read the incoming data
-    // 1 means buzzed (buzzer), 2 means turn buzzer led on (main), 3 means reset (main)
-    
+    // 1 means buzzed (buzzer), 20 means turn buzzer led on (main), 30 means reset (main)
+    Serial.print(incomingData);
     //===== Sending =====//
     if (incomingData == 1) {
       buzzed = header.from_node;
       RF24NetworkHeader header1(main);
       network.write(header1, &buzzed, sizeof(buzzed));
+      Serial.println("written");
     } else {
       unsigned long buzzerState = 1;
-      if (incomingData == 3) {buzzerState == 0;}
-      RF24NetworkHeader header2(team_nodes[buzzed]); // buzzed will always be initialized before
+      if (incomingData == 3) {
+        buzzerState = 0;
+      }
+      Serial.println(buzzerState);
+      RF24NetworkHeader header2(team_nodes[(buzzed-2)/8 - 1]); // buzzed will always be initialized before
       network.write(header2, &buzzerState, sizeof(buzzerState));
     } 
   }

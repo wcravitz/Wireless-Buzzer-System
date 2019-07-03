@@ -19,30 +19,34 @@ void setup() {
   radio.begin();
   network.begin(90, main); //(channel, node address)
   radio.setDataRate(RF24_2MBPS);
+  pinMode(buttonPin, INPUT);
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < 2; j++) {
+      pinMode(leds[i][j], OUTPUT);
+    }
+  }
 }
 
 void loop() {
-  network.update();
   //===== Receiving =====//
   if (!locked) {
+    network.update();
     while (network.available()) { // Is there any incoming data
       RF24NetworkHeader header;
       network.read(header, &buzzed, sizeof(buzzed)); // Read the incoming data
       buzzTeam = header.from_node;
-      digitalWrite(leds[buzzTeam-1][buzzed-1], HIGH);
-      unsigned long ledOn = 2;
-      RF24NetworkHeader header1(teams[buzzTeam-1]);
-      network.write(header1, &ledOn, sizeof(ledOn));
+      digitalWrite(leds[buzzTeam-1][(buzzed-2)/8 - 1], HIGH);
       locked = true;
     }
   } else {
+    unsigned long ledState = 2;
     if (digitalRead(buttonPin)) {
-      digitalWrite(leds[buzzTeam-1][buzzed-1], LOW);
-      unsigned long ledOff = 3;
-      RF24NetworkHeader header2(teams[buzzTeam-1]);
-      network.write(header2, &ledOff, sizeof(ledOff));
+      digitalWrite(leds[buzzTeam-1][(buzzed-2)/8 - 1], LOW);
+      ledState = 3;
       locked = false;
+      network.update();
     }
+    RF24NetworkHeader header2(teams[buzzTeam-1]);
+    network.write(header2, &ledState, sizeof(ledState));
   }
-
 }
