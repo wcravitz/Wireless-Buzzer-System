@@ -6,6 +6,7 @@ const int buttonPin = 4;
 bool locked = false;
 unsigned long buzzTeam;
 unsigned long buzzed;
+unsigned long ledState;
 
 RF24 radio(9, 10);               // nRF24L01 (CE,CSN)
 RF24Network network(radio);      // Include the radio in the network
@@ -34,12 +35,13 @@ void loop() {
     while (network.available()) { // Is there any incoming data
       RF24NetworkHeader header;
       network.read(header, &buzzed, sizeof(buzzed)); // Read the incoming data
+      Serial.print(buzzed);
       buzzTeam = header.from_node;
       digitalWrite(leds[buzzTeam-1][(buzzed-2)/8 - 1], HIGH);
+      ledState = 2;
       locked = true;
     }
   } else {
-    unsigned long ledState = 2;
     if (digitalRead(buttonPin)) {
       digitalWrite(leds[buzzTeam-1][(buzzed-2)/8 - 1], LOW);
       ledState = 3;

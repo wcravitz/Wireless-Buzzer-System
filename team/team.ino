@@ -3,6 +3,7 @@
 #include <SPI.h>
 
 unsigned long buzzed;
+bool locked = false;
 
 RF24 radio(9, 10);               // nRF24L01 (CE,CSN)
 RF24Network network(radio);      // Include the radio in the network
@@ -29,19 +30,24 @@ void loop() {
     // 1 means buzzed (buzzer), 20 means turn buzzer led on (main), 30 means reset (main)
     Serial.print(incomingData);
     //===== Sending =====//
-    if (incomingData == 1) {
-      buzzed = header.from_node;
-      RF24NetworkHeader header1(main);
-      network.write(header1, &buzzed, sizeof(buzzed));
-      Serial.println("written");
-    } else {
-      unsigned long buzzerState = 1;
-      if (incomingData == 3) {
-        buzzerState = 0;
+    if (!locked) {
+      if (incomingData == 1) {
+        buzzed = header.from_node;
+        RF24NetworkHeader header1(main);
+        network.write(header1, &buzzed, sizeof(buzzed));
+        locked = true;
       }
-      Serial.println(buzzerState);
-      RF24NetworkHeader header2(team_nodes[(buzzed-2)/8 - 1]); // buzzed will always be initialized before
-      network.write(header2, &buzzerState, sizeof(buzzerState));
-    } 
+    } else {
+      if (incomingData == 2 || incomingData == 3) {
+        unsigned long buzzerState = 1;
+        if (incomingData == 3) {
+          buzzerState = 0;
+          locked = false;
+        }
+        Serial.println((buzzed-2)/8 - 1);
+        RF24NetworkHeader header2(team_nodes[(buzzed-2)/8 - 1]); // buzzed will always be initialized before
+        network.write(header2, &buzzerState, sizeof(buzzerState));
+      } 
+    }
   }
 }
