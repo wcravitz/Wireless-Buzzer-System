@@ -2,21 +2,22 @@
 #include <RF24Network.h>
 #include <SPI.h>
 
-unsigned long buzzed;
 bool locked = false;
-
-RF24 radio(9, 10);               // nRF24L01 (CE,CSN)
-RF24Network network(radio);      // Include the radio in the network
-//const uint16_t team_nodes[] = {011, 021, 031, 041, 051}; 
-const uint16_t team_nodes[] = {012, 022, 032, 042, 052};
-const uint16_t team = 02;
+unsigned long buzzed;
+const uint16_t team_nodes[2][5] = {{011, 021, 031, 041, 051}, {012, 022, 032, 042, 052}};
+const uint16_t teams[2] = {01, 02};
 const uint16_t main = 00;
+const int index = 0;
+const int team = teams[index];
+
+RF24 radio(9, 10); // nRF24L01 (CE,CSN)
+RF24Network network(radio); // Include the radio in the network
 
 void setup() {
   Serial.begin(9600);
   SPI.begin();
   radio.begin();
-  network.begin(90, team); //(channel, node address)
+  network.begin(90, team); // (channel, node address)
   radio.setDataRate(RF24_2MBPS);
 }
 
@@ -27,12 +28,13 @@ void loop() {
     RF24NetworkHeader header;
     unsigned long incomingData;
     network.read(header, &incomingData, sizeof(incomingData)); // Read the incoming data
-    // 1 means buzzed (buzzer), 20 means turn buzzer led on (main), 30 means reset (main)
+    // 1 means buzzed (buzzer), 2 means turn buzzer led on (main), 3 means reset (main)
     Serial.print(incomingData);
+    
     //===== Sending =====//
-    if (!locked) {
+    if (!locked) { // If the system has been reset
       if (incomingData == 1) {
-        buzzed = header.from_node;
+        buzzed = ((header.from_node-team)/8 - 1);
         RF24NetworkHeader header1(main);
         network.write(header1, &buzzed, sizeof(buzzed));
         locked = true;
@@ -40,12 +42,12 @@ void loop() {
     } else {
       if (incomingData == 2 || incomingData == 3) {
         unsigned long buzzerState = 1;
-        if (incomingData == 3) {
+        if (incomingData == 3) { // Reset the system
           buzzerState = 0;
           locked = false;
         }
-        Serial.println((buzzed-2)/8 - 1);
-        RF24NetworkHeader header2(team_nodes[(buzzed-2)/8 - 1]); // buzzed will always be initialized before
+        Serial.println(buzzed);
+        RF24NetworkHeader header2(team_nodes[index][buzzed]); // buzzed will always be initialized before
         network.write(header2, &buzzerState, sizeof(buzzerState));
       } 
     }
