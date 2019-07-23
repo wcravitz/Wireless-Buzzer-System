@@ -8,7 +8,7 @@ bool locked = false;
 unsigned long buzzTeam;
 unsigned long buzzed;
 unsigned long ledState;
-const int leds[2][2] = {{2,3},{5,6}};
+const int leds[2][2] = {{5,6},{2,3}};
 const uint16_t teams[2] = {01, 02};
 const uint16_t main = 00;
 
@@ -36,7 +36,6 @@ void loop() {
     while (network.available()) { // Is there any incoming data
       RF24NetworkHeader header;
       network.read(header, &buzzed, sizeof(buzzed)); // Read the incoming data
-      Serial.print(buzzed);
       buzzTeam = header.from_node - 1;
       digitalWrite(leds[buzzTeam][buzzed], HIGH);
       ledState = 2;
@@ -49,7 +48,17 @@ void loop() {
       locked = false;
       network.update();
     }
-    RF24NetworkHeader header2(teams[buzzTeam]);
-    network.write(header2, &ledState, sizeof(ledState));
+    Serial.println(ledState);
+    multisend(5, ledState, teams[buzzTeam]);
+//    RF24NetworkHeader header2(teams[buzzTeam]);
+//    network.write(header2, &ledState, sizeof(ledState));
+  }
+}
+
+void multisend(int n, unsigned long message, const uint16_t dest) {
+  for (int i = 0; i < n; i++) {
+    RF24NetworkHeader header2(dest);
+    network.write(header2, &message, sizeof(message));
+    network.update();
   }
 }

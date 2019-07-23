@@ -9,7 +9,7 @@ const uint16_t teamNodes[2][5] = {{011, 021, 031, 041, 051}, {012, 022, 032, 042
 const uint16_t teams[2] = {01, 02};
 const int index = 0;
 const int team = teams[index/5];
-const int node = teamNodes[team][index%5];
+const int node = teamNodes[team-1][index%5];
 
 RF24 radio(9, 10); // nRF24L01 (CE,CSN)
 RF24Network network(radio); // Include the radio in the network
@@ -22,6 +22,9 @@ void setup() {
   radio.setDataRate(RF24_2MBPS);
   pinMode(buttonPin, INPUT);
   pinMode(ledPin, OUTPUT);
+
+  Serial.println(team);
+  Serial.println(node);
 }
 
 void loop() {

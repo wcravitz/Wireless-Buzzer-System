@@ -46,6 +46,7 @@ void loop() {
           buzzerState = 0;
           locked = false;
         }
+        Serial.print(incomingData);
         Serial.println(buzzed);
         RF24NetworkHeader header2(team_nodes[index][buzzed]); // buzzed will always be initialized before
         network.write(header2, &buzzerState, sizeof(buzzerState));
