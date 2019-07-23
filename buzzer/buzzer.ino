@@ -9,7 +9,7 @@ const uint16_t teamNodes[2][5] = {{011, 021, 031, 041, 051}, {012, 022, 032, 042
 const uint16_t teams[2] = {01, 02};
 const int index = 0;
 const int team = teams[index/5];
-const int node = teamNodes[team-1][index%5];
+const int node = teamNodes[index/5][index%5];
 
 RF24 radio(9, 10); // nRF24L01 (CE,CSN)
 RF24Network network(radio); // Include the radio in the network
@@ -39,7 +39,6 @@ void loop() {
   //===== Sending =====//
   unsigned long buttonState = digitalRead(buttonPin); // Read the button value
   if (buttonState) {
-    Serial.println(buttonState);
     RF24NetworkHeader header1(team); // (Address where the data is going)
     network.write(header1, &buttonState, sizeof(buttonState)); // Send the data
   }

@@ -48,15 +48,12 @@ void loop() {
       locked = false;
       network.update();
     }
-    Serial.println(ledState);
-    multisend(5, ledState, teams[buzzTeam]);
-//    RF24NetworkHeader header2(teams[buzzTeam]);
-//    network.write(header2, &ledState, sizeof(ledState));
+    safeTransmit(20, ledState, teams[buzzTeam]);
   }
 }
 
-void multisend(int n, unsigned long message, const uint16_t dest) {
-  for (int i = 0; i < n; i++) {
+void safeTransmit(int num, unsigned long message, const uint16_t dest) {
+  for (int i = 0; i < num; i++) {
     RF24NetworkHeader header2(dest);
     network.write(header2, &message, sizeof(message));
     network.update();

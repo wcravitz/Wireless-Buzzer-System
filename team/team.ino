@@ -29,7 +29,6 @@ void loop() {
     unsigned long incomingData;
     network.read(header, &incomingData, sizeof(incomingData)); // Read the incoming data
     // 1 means buzzed (buzzer), 2 means turn buzzer led on (main), 3 means reset (main)
-    Serial.print(incomingData);
     
     //===== Sending =====//
     if (!locked) { // If the system has been reset
@@ -46,8 +45,7 @@ void loop() {
           buzzerState = 0;
           locked = false;
         }
-        Serial.print(incomingData);
-        Serial.println(buzzed);
+        
         RF24NetworkHeader header2(team_nodes[index][buzzed]); // buzzed will always be initialized before
         network.write(header2, &buzzerState, sizeof(buzzerState));
       } 
