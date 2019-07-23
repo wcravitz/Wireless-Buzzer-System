@@ -8,6 +8,7 @@ bool locked = false;
 unsigned long buzzTeam;
 unsigned long buzzed;
 unsigned long ledState;
+unsigned long resetConfirmed;
 const int leds[2][2] = {{5,6},{2,3}};
 const uint16_t teams[2] = {01, 02};
 const uint16_t main = 00;
@@ -43,19 +44,27 @@ void loop() {
     }
   } else {
     if (digitalRead(buttonPin)) {
-      digitalWrite(leds[buzzTeam][buzzed], LOW);
+      resetConfirmed = 0;
       ledState = 3;
+      while (resetConfirmed != 1) {
+        RF24NetworkHeader header2(teams[buzzTeam]);
+        network.write(header2, &ledState, sizeof(ledState));
+        network.update();
+        while (network.available()) {
+          RF24NetworkHeader header3;
+          network.read(header3, &resetConfirmed, sizeof(resetConfirmed));
+        }
+      }
+      digitalWrite(leds[buzzTeam][buzzed], LOW);
       locked = false;
-      network.update();
     }
-    safeTransmit(20, ledState, teams[buzzTeam]);
   }
 }
 
 void safeTransmit(int num, unsigned long message, const uint16_t dest) {
   for (int i = 0; i < num; i++) {
-    RF24NetworkHeader header2(dest);
-    network.write(header2, &message, sizeof(message));
+    RF24NetworkHeader header(dest);
+    network.write(header, &message, sizeof(message));
     network.update();
   }
 }

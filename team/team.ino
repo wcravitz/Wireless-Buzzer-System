@@ -4,6 +4,7 @@
 
 bool locked = false;
 unsigned long buzzed;
+unsigned long confirmReset = 1;
 const uint16_t team_nodes[2][5] = {{011, 021, 031, 041, 051}, {012, 022, 032, 042, 052}};
 const uint16_t teams[2] = {01, 02};
 const uint16_t main = 00;
@@ -42,6 +43,7 @@ void loop() {
       if (incomingData == 2 || incomingData == 3) {
         unsigned long buzzerState = 1;
         if (incomingData == 3) { // Reset the system
+          safeTransmit(10, confirmReset, main);
           buzzerState = 0;
           locked = false;
         }
@@ -50,5 +52,13 @@ void loop() {
         network.write(header2, &buzzerState, sizeof(buzzerState));
       } 
     }
+  }
+}
+
+void safeTransmit(int num, unsigned long message, const uint16_t dest) {
+  for (int i = 0; i < num; i++) {
+    RF24NetworkHeader header(dest);
+    network.write(header, &message, sizeof(message));
+    network.update();
   }
 }

@@ -43,3 +43,11 @@ void loop() {
     network.write(header1, &buttonState, sizeof(buttonState)); // Send the data
   }
 }
+
+void safeTransmit(int num, unsigned long message, const uint16_t dest) {
+  for (int i = 0; i < num; i++) {
+    RF24NetworkHeader header(dest);
+    network.write(header, &message, sizeof(message));
+    network.update();
+  }
+}
