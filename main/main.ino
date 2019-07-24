@@ -39,6 +39,7 @@ void loop() {
       buzzTeam = header.from_node - 1;
       digitalWrite(leds[buzzTeam][buzzed], HIGH);
       ledState = 2;
+      safeTransmit(20, ledState, teams[buzzTeam]);
       locked = true;
     }
   } else {
@@ -47,8 +48,9 @@ void loop() {
       ledState = 3;
       locked = false;
       network.update();
+      safeTransmit(20, ledState, teams[buzzTeam]);
     }
-    safeTransmit(20, ledState, teams[buzzTeam]);
+    
   }
 }
 
